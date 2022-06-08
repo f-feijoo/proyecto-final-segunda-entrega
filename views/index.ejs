@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include("templates/head")   %>
+<body>
+    <h1 class="text-center p-5">Beinvenidos a mi tienda</h1>
+    <div class="container mt-5 overflow-auto">
+        <table class="table table-success table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Imagen</th>
+                </tr>
+            </thead>
+            <tbody class="overflow-auto" id="caja">
+                <% data.map((x) => { %> 
+                    
+                    <tr>
+                        <th scope="row"><%= x.id %></th>
+                        <td><%= x.nombre %></td>
+                        <td><%= x.desc %></td>
+                        <td>$<%= x.precio %></td>
+                        <td><%= x.stock %></td>
+                        <td><img src=<%= x.img %> width="40"
+                            height="40" alt="..."></td>               
+                    </tr>          
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <br>
+    <div class="container mt-5 d-grid gap-2">
+        <a class="btn btn-primary justify-content-center" href="/api/productos">Ir a productos</a>
+        <form class="d-grid gap-2" onsubmit="return sendPost('api/carrito').then(result => {alert(result.message)})">
+            <button class="btn btn-primary" name="crear">Crear carrito</button>
+        </form>
+    </div>
+</body>
+</html>
