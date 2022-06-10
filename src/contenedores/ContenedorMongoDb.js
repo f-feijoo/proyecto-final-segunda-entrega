@@ -22,7 +22,7 @@ class ContenedorMongoDb {
       if (documento.length == 0) {
         throw new Error("Error al listar por id: no encontrado");
       } else {
-        const result = renameField(asPOJO(docs[0]), "_id", "id");
+        const result = renameField(asPOJO(documento[0]), "_id", "id");
         return result;
       }
     } catch (error) {
@@ -46,7 +46,6 @@ class ContenedorMongoDb {
       let doc = await this.coleccion.create(obj);
       doc = asPOJO(doc);
       renameField(doc, "_id", "id");
-      console.log(doc)
       return doc;
     } catch (error) {
       throw new Error(`Error al guardar: ${error}`);

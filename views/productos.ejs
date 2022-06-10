@@ -23,7 +23,7 @@
                     <h5 class="card-title"><%= x.nombre %></h5>
                     <p class="card-text"><%= x.desc %></p>
                     <p class="card-text text-center"><strong>$<%= x.precio %></strong></p>
-                    <form onsubmit="return sendProd('carrito/'+<%= x.id %> +'/productos').then(result => {alert(result.message)})">
+                    <form onsubmit="return sendProd(<%= nroC %>, <%= x.id %>).then(result => {alert(result.message)})">
                         <button class="btn btn-success" name="agregar">Agregar</button>
                     </form>
                     </div>

@@ -1,8 +1,8 @@
 import express from "express";
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const { Router } = express;
 import {
   productosDao as productosApi,
@@ -17,10 +17,11 @@ productosRouter.get("/", async (req, res) => {
   if (req.query.admin) {
     res.render("productosAdmin", { data: await productosApi.mostrarTodos() });
   } else {
-    let carrito = 1;
+    let carritos = await carritosApi.mostrarTodos();
+    let carrito = carritos[carritos.length - 1].id
     res.render("productos", {
       data: await productosApi.mostrarTodos(),
-      nroC: "carrito/" + carrito + "/productos",
+      nroC: "carritos/"+ carrito + "/productos",
     });
   }
 });
@@ -29,8 +30,9 @@ productosRouter.get("/:id", async (req, res) => {
   res.json(await productosApi.mostrar(req.params.id));
 });
 
+// PARA ACCEDER USAR QUERY PARAMS ADMIN=TRUE
+
 productosRouter.post("/", async (req, res) => {
-    console.log(req.body)
   if (req.query.admin) {
     const obj = req.body;
     let productoNuevo = {
@@ -38,9 +40,8 @@ productosRouter.post("/", async (req, res) => {
       timestamp: Date.now(),
       codigo: obj.nombre.toLowerCase().replace(/\s/, "-"),
     };
-    console.log('cargado');
-    res.render("productosAdmin", {
-      data: await productosApi.guardar(productoNuevo)
+    res.render("uploaded", {
+      data: await productosApi.guardar(productoNuevo),
     });
   } else {
     res.send({ error: "permiso denegado" });
@@ -63,7 +64,7 @@ productosRouter.put("/:id", async (req, res) => {
 
 productosRouter.delete("/:id", async (req, res) => {
   if (req.query.admin) {
-    await productosApi.borrar(req.params.id)
+    await productosApi.borrar(req.params.id);
     res.send({ delete: "ok", id: req.params.id });
   } else {
     res.send({
@@ -76,127 +77,41 @@ productosRouter.delete("/:id", async (req, res) => {
 const carritoRouter = new Router();
 
 carritoRouter.get("/:id/productos", async (req, res) => {
-  // fs.readFile(`./carrito.json`, 'utf-8', (err, data) => {
-  //     if (err) {
-  //         return({message: 'Error en la consulta'})
-  //     }else{
-  //         let obj = JSON.parse(data)
-  //         let ide = req.params.id
-  //         let resp = obj.find(x => x.id == ide)
-  //         if(resp) {
-  //             res.render('carrito', {data: resp, idC: ide})
-  //         } else {
-  //             res.send({ error : 'carrito no encontrado' })
-  //         }
-  //     }
-  // })
+  res.render('carrito', {data: await carritosApi.mostrar(req.params.id), idC: req.params.id})
 });
 
 carritoRouter.post("/:id/productos", async (req, res) => {
-  // fs.readFile(`./productos.json`, 'utf-8', (err, data) => {
-  //     if (err) {
-  //         res.send({message: 'Error en la consulta'})
-  //     }else{
-  //         let obj = JSON.parse(data)
-  //         let ide = req.params.id
-  //         let resp = obj.find(x => x.id == ide)
-  //         if(resp) {
-  //             fs.readFile(`./carrito.json`, 'utf-8', (err, data) => {
-  //                 if (err) {
-  //                     return({message: 'Error en la consulta'})
-  //                 }else{
-  //                     let carr = JSON.parse(data)
-  //                     carr[carr.length-1]['productos'].push(resp)
-  //                     fs.writeFile('./carrito.json', JSON.stringify(carr), 'utf-8', (err) => {
-  //                         if(err){
-  //                             return 'Error al escribir'
-  //                         } else {
-  //                            res.send({message: `Producto agregado, id: ${resp.id}`})
-  //                         }
-  //                     } )
-  //                 }
-  //             })
-  //         } else {
-  //             res.send({ error : 'producto no encontrado' })
-  //         }
-  //     }
-  // })
+  const carrito = await carritosApi.listar(req.params.id);
+  const producto = await productosApi.listar(req.body.id);
+  carrito.productos.push(producto);
+  await carritosApi.actualizar(carrito);
+  res.send({ message: `Producto agregado, id: ${req.body.id}` });
 });
 
 carritoRouter.post("/", async (req, res) => {
-  // fs.readFile(`./carrito.json`, 'utf-8', (err, data) => {
-  //     if (err) {
-  //         return({message: 'Error en la consulta'})
-  //     }else{
-  //         let carr = JSON.parse(data)
-  //         let ind = carr[carr.length - 1]['id'] + 1
-  //         let obj = {
-  //             id: ind,
-  //             timestamp: Date.now(),
-  //             productos: []
-  //         }
-  //         carr.push(obj)
-  //         fs.writeFile('./carrito.json', JSON.stringify(carr), 'utf-8', (err) => {
-  //             if(err){
-  //                 return 'Error al escribir'
-  //             } else {
-  //               res.send({message: `Carrito creado, id: ${obj.id}`})
-  //             }
-  //         } )
-  //     }
-  // })
+  let obj = {
+    timestamp: Date.now(),
+    productos: [],
+  };
+  res.send({
+    message: `Carrito creado, id: ${(await carritosApi.guardar(obj)).id}`,
+  });
 });
 
 carritoRouter.delete("/:id", async (req, res) => {
-  // fs.readFile(`./carrito.json`, 'utf-8', (err, data) => {
-  //     if (err) {
-  //         return({message: 'Error en la lectura'})
-  //     }else{
-  //         let id = Number.parseInt(req.params.id)
-  //         let carr = JSON.parse(data)
-  //         let index = carr.findIndex(element => element['id'] === id)
-  //         if(index == -1) {
-  //             res.send({ error : 'carrito no encontrado' })
-  //         } else {
-  //             carr.splice(index, 1)
-  //             fs.writeFile('./carrito.json', JSON.stringify(carr), 'utf-8', (err) => {
-  //                 if(err){
-  //                     return 'Error al escribir'
-  //                 } else {
-  //                     res.send({delete: 'ok', id: id})
-  //                 }
-  //             } )
-  //             }}
-  // })
+  let id = Number.parseInt(req.params.id);
+  await carritosApi.borrar(id);
+  res.send({ delete: "ok", id: id });
 });
 
 carritoRouter.delete("/:id/productos/:id_prod", async (req, res) => {
-  // fs.readFile(`./carrito.json`, 'utf-8', (err, data) => {
-  //     if (err) {
-  //         return({message: 'Error en la lectura'})
-  //     }else{
-  //         let id = Number.parseInt(req.params.id)
-  //         let carr = JSON.parse(data)
-  //         let index = carr.findIndex(element => element['id'] === id)
-  //         if(index == -1) {
-  //             res.send({ error : 'carrito no encontrado' })
-  //         } else {
-  //             let idP = Number.parseInt(req.params.id_prod)
-  //             let indexProd = carr[index]['productos'].findIndex(element => element['id'] === idP)
-  //             if(indexProd == -1) {
-  //                 res.send({ error : 'producto no encontrado' })
-  //             } else {
-  //                 carr[index]['productos'].splice(indexProd, 1)
-  //                 fs.writeFile('./carrito.json', JSON.stringify(carr), 'utf-8', (err) => {
-  //                     if(err){
-  //                         return 'Error al escribir'
-  //                     } else {
-  //                         res.send({message: `Producto con ID ${idP} eliminado.` })
-  //                     }
-  //                 } )
-  //                 }
-  //             }}
-  // })
+  const carrito = await carritosApi.listar(req.params.id);
+  const index = carrito.productos.findIndex((p) => p.id == req.params.idProd);
+  if (index != -1) {
+    carrito.productos.splice(index, 1);
+    await carritosApi.actualizar(carrito);
+  }
+  res.send({ message: `Producto con ID ${idP} eliminado.` });
 });
 
 app.set("views", "./views");

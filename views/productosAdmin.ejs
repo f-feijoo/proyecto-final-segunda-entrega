@@ -12,7 +12,7 @@
     
 <body>
     <div class="container mt-5">
-        <form id="cargaProd" onsubmit="return sendPost('productos').then(result => {alert(result.message)})">
+        <form id="cargaProd" onsubmit="return sendPost('productos?admin=true').then(fetch('productos?admin=true'))">
             <div class="row">
                 <div class="col">
                     <label class="form-label" for="nombre">Nombre</label>
