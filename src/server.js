@@ -17,11 +17,19 @@ productosRouter.get("/", async (req, res) => {
   if (req.query.admin) {
     res.render("productosAdmin", { data: await productosApi.mostrarTodos() });
   } else {
+    // ARREGLAR CUANDO NO HAR CARRITOS CARGADOS
     let carritos = await carritosApi.mostrarTodos();
-    let carrito = carritos[carritos.length - 1].id
+    let param
+    if (carritos.length > 0) {
+      let carrito = carritos[carritos.length - 1].id
+      param = "carritos/"+ carrito + "/productos"
+    } else {
+      param = '#'
+    }
+    
     res.render("productos", {
       data: await productosApi.mostrarTodos(),
-      nroC: "carritos/"+ carrito + "/productos",
+      nroC: param,
     });
   }
 });
@@ -53,10 +61,9 @@ productosRouter.put("/:id", async (req, res) => {
     let newProd = {
       ...req.body,
       timestamp: Date.now(),
-      codigo: (req.body.nombre + id).toLowerCase().replace(/\s/, "-"),
+      codigo: (req.body.nombre + req.params.id).toLowerCase().replace(/\s/, "-"),
     };
-    await productosApi.actualizar(newProd);
-    res.render("uploaded", { data: newProd });
+    res.render("uploaded", { data: await productosApi.actualizar(newProd) });
   } else {
     res.send({ error: "permiso denegado" });
   }

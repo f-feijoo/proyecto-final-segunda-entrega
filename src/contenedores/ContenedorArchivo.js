@@ -51,6 +51,8 @@ class ContenedorArchivo {
       await fs.writeFile(this.ruta, JSON.stringify(objetos), (err) => {
         if (err) {
           throw new Error(`Error al actualizar: ${err}`);
+        } else {
+          return elem
         }
       });
     }

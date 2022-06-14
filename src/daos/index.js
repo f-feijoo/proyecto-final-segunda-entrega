@@ -25,7 +25,18 @@ switch (process.env.PERS) {
     productosDao = new ProductosDaoMongoDb();
     carritosDao = new CarritosDaoMongoDb();
     break;
-  default:
+    case "firebase":
+      const { default: ProductosDaoFirebase } = await import(
+        "./productos/ProductosDaoFirebase.js"
+      );
+      const { default: CarritosDaoFirebase } = await import(
+        "./carritos/CarritosDaoFirebase.js"
+      );
+  
+      productosDao = new ProductosDaoFirebase();
+      carritosDao = new CarritosDaoFirebase();
+      break;
+    default:
     const { default: ProductosDaoMem } = await import(
       "./productos/ProductosDaoMemoria.js"
     );
